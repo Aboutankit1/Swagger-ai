@@ -1,0 +1,14 @@
+services:
+  swagger-ai-tester:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"   # only this computer. Change deliberately if you want to share it.
+    environment:
+      APP_PASSWORD: ${APP_PASSWORD:?Set APP_PASSWORD before starting (see .env.example)}
+      APP_USER: ${APP_USER:-admin}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # lets the container call APIs running on your computer
+    restart: unless-stopped

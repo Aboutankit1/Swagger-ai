@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Swagger AI Tester</title>
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Paste any Swagger / OpenAPI link, local or live. AI writes the payloads and runs every API for you.">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230071e3'/%3E%3Cpath d='M20 32l8 8 16-18' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd; --fill:rgba(120,120,128,.12); --fill-2:rgba(120,120,128,.08);
+  --text:#1d1d1f; --text-2:#6e6e73; --text-3:#a1a1a6; --line:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-h:#0077ed; --accent-soft:rgba(0,113,227,.1);
+  --green:#1d9b4a; --green-soft:rgba(52,199,89,.14); --red:#d70015; --red-soft:rgba(255,59,48,.12); --orange:#c93400; --orange-soft:rgba(255,149,0,.15);
+  --m-get:#1d9b4a; --m-post:#0071e3; --m-put:#c77700; --m-patch:#8944ab; --m-delete:#d70015; --m-other:#6e6e73;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 30px rgba(0,0,0,.06);
+  --nav:rgba(245,245,247,.72);
+  --code-bg:#f5f5f7; --t-k:#0b5cad; --t-s:#b5360d; --t-n:#1a7f37; --t-b:#8944ab; --t-z:#6e6e73;
+  --radius:20px;
+}
+:root[data-theme="dark"]{
+  --bg:#000; --surface:#1c1c1e; --surface-2:#2c2c2e; --fill:rgba(120,120,128,.28); --fill-2:rgba(120,120,128,.18);
+  --text:#f5f5f7; --text-2:#98989d; --text-3:#636366; --line:rgba(255,255,255,.1);
+  --accent:#2997ff; --accent-h:#4aa8ff; --accent-soft:rgba(41,151,255,.16);
+  --green:#32d74b; --green-soft:rgba(48,209,88,.16); --red:#ff453a; --red-soft:rgba(255,69,58,.16); --orange:#ff9f0a; --orange-soft:rgba(255,159,10,.16);
+  --m-get:#32d74b; --m-post:#2997ff; --m-put:#ff9f0a; --m-patch:#bf5af2; --m-delete:#ff453a; --m-other:#98989d;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 30px rgba(0,0,0,.35);
+  --nav:rgba(0,0,0,.6);
+  --code-bg:#111113; --t-k:#64b5ff; --t-s:#ff9f7a; --t-n:#6be585; --t-b:#d397ff; --t-z:#98989d;
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;line-height:1.47;letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;min-height:100vh;transition:background .3s,color .3s;
+}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;border:0;background:none}
+.mono,textarea.code,pre,code{font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+[hidden]{display:none!important}
+svg{display:block}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:50;height:52px;display:flex;align-items:center;gap:12px;padding:0 max(20px,env(safe-area-inset-left));
+  background:var(--nav);backdrop-filter:saturate(180%) blur(22px);-webkit-backdrop-filter:saturate(180%) blur(22px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:-.02em;white-space:nowrap}
+@media (max-width:420px){.brand{font-size:14.5px;gap:8px}.nav{gap:6px;padding:0 14px}}
+.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(145deg,#2997ff,#0057c2);display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,113,227,.35)}
+.spacer{flex:1}
+.icon-btn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--text-2);transition:background .2s,color .2s}
+.icon-btn:hover{background:var(--fill);color:var(--text)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 18px;border-radius:980px;font-weight:500;font-size:14px;
+  background:var(--fill);color:var(--text);transition:transform .15s,background .2s,opacity .2s,box-shadow .2s;white-space:nowrap}
+.btn:hover{background:var(--fill)} .btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-h)}
+.btn.ai{background:linear-gradient(135deg,#7a5cff,#0a84ff);color:#fff;box-shadow:0 4px 14px rgba(10,132,255,.3)}
+.btn.ai:hover{filter:brightness(1.08)}
+.btn.lg{height:48px;padding:0 26px;font-size:16px}
+.btn.sm{height:30px;padding:0 13px;font-size:13px}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* hero */
+.hero{max-width:820px;margin:0 auto;padding:clamp(48px,11vh,120px) 22px 40px;text-align:center}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:6px 14px;border-radius:980px;margin-bottom:22px}
+.hero h1{font-size:clamp(36px,6.2vw,64px);line-height:1.05;font-weight:700;letter-spacing:-.04em;margin-bottom:18px}
+.grad{background:linear-gradient(110deg,#7a5cff 0%,#0a84ff 45%,#30d5c8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{font-size:clamp(16px,2.2vw,21px);color:var(--text-2);max-width:620px;margin:0 auto 34px;line-height:1.4}
+.urlbar{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:980px;padding:7px 7px 7px 22px;box-shadow:var(--shadow);border:1px solid var(--line);
+  transition:box-shadow .25s,border-color .25s;max-width:700px;margin:0 auto}
+.urlbar:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow)}
+.urlbar input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px;height:40px}
+.urlbar input::placeholder{color:var(--text-3)}
+.hero .links{margin-top:18px;font-size:14px;color:var(--text-2);display:flex;gap:6px;justify-content:center;flex-wrap:wrap;align-items:center}
+.link{color:var(--accent);cursor:pointer;background:none;font-size:inherit}
+.link:hover{text-decoration:underline}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;max-width:960px;margin:56px auto 0;padding:0 22px 80px;animation:rise .9s .1s cubic-bezier(.2,.8,.2,1) both}
+.feat{background:var(--surface);border-radius:var(--radius);padding:22px;text-align:left;box-shadow:var(--shadow);border:1px solid var(--line)}
+.feat .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px;color:#fff}
+.feat h3{font-size:16px;font-weight:600;margin-bottom:4px;letter-spacing:-.02em}
+.feat p{font-size:14px;color:var(--text-2)}
+
+/* app layout */
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;max-width:1500px;margin:0 auto;padding:16px;align-items:start}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
+.side{position:sticky;top:68px;max-height:calc(100vh - 84px);display:flex;flex-direction:column;overflow:hidden}
+.side-head{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.api-title{font-size:18px;font-weight:700;letter-spacing:-.03em;line-height:1.2;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:980px;background:var(--fill);color:var(--text-2);letter-spacing:0}
+.meta{font-size:12.5px;color:var(--text-2);margin-top:4px}
+.field-label{display:block;font-size:12px;font-weight:500;color:var(--text-2);margin:12px 0 5px}
+.input{width:100%;height:36px;border-radius:10px;border:1px solid transparent;background:var(--fill-2);padding:0 12px;outline:0;font-size:14px;transition:border-color .2s,background .2s,box-shadow .2s}
+.input:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
+.search{position:relative;padding:12px 18px 8px}
+.search svg{position:absolute;left:29px;top:50%;transform:translateY(-35%);color:var(--text-3)}
+.search .input{padding-left:32px;border-radius:980px}
+.list{overflow:auto;padding:4px 10px 14px;flex:1;min-height:120px}
+.tag{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding:14px 10px 6px;position:sticky;top:0;background:linear-gradient(var(--surface) 75%,transparent);z-index:1}
+.row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 10px;border-radius:12px;transition:background .15s}
+.row:hover{background:var(--fill-2)}
+.row.active{background:var(--accent-soft)}
+.row .p{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .p small{display:block;font-size:12px;font-weight:400;color:var(--text-2);overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;background:transparent;flex:none}
+.dot.pass{background:var(--green)} .dot.fail{background:var(--red)}
+.m{flex:none;min-width:52px;text-align:center;font-size:11px;font-weight:700;padding:3px 0;border-radius:7px;letter-spacing:.02em;color:var(--mc);background:color-mix(in srgb,var(--mc) 14%,transparent)}
+.m.GET{--mc:var(--m-get)} .m.POST{--mc:var(--m-post)} .m.PUT{--mc:var(--m-put)} .m.PATCH{--mc:var(--m-patch)} .m.DELETE{--mc:var(--m-delete)} .m.HEAD,.m.OPTIONS{--mc:var(--m-other)}
+.side-foot{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:8px}
+.side-foot .btn{flex:1}
+
+/* detail */
+.detail{padding:0;overflow:hidden;scroll-margin-top:64px}
+.d-head{padding:24px 26px 18px;border-bottom:1px solid var(--line)}
+.d-path{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.d-path .m{font-size:13px;padding:5px 12px;min-width:64px}
+.d-path code{font-size:19px;font-weight:600;letter-spacing:-.02em;word-break:break-all}
+.d-sum{color:var(--text-2);margin-top:8px;max-width:78ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:12px;font-weight:500;padding:3px 10px;border-radius:980px;background:var(--fill-2);color:var(--text-2)}
+.chip.lock{background:var(--orange-soft);color:var(--orange)}
+.chip.ai{background:var(--accent-soft);color:var(--accent)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 26px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;background:var(--fill);border-radius:10px;padding:2px;gap:2px}
+.seg button{height:28px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-2);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+:root[data-theme="dark"] .seg button.on{background:#636366}
+.seg .n{font-size:11px;background:var(--accent);color:#fff;border-radius:980px;padding:0 6px;line-height:16px}
+.editor{padding:18px 26px 8px}
+textarea.code{width:100%;min-height:210px;resize:vertical;border:1px solid transparent;background:var(--code-bg);border-radius:14px;padding:16px 18px;font-size:13px;line-height:1.6;outline:0;
+  tab-size:2;transition:border-color .2s,box-shadow .2s;color:var(--text)}
+textarea.code:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.code.bad{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.hint{font-size:12.5px;color:var(--text-2);margin:8px 2px 0;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hint .err{color:var(--red)}
+.resp{margin:18px 26px 26px;border-radius:16px;border:1px solid var(--line);overflow:hidden}
+.resp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.status{font-weight:700;font-size:13px;padding:4px 12px;border-radius:980px}
+.status.ok{background:var(--green-soft);color:var(--green)} .status.warn{background:var(--orange-soft);color:var(--orange)} .status.bad{background:var(--red-soft);color:var(--red)}
+.verdict{font-size:12.5px;font-weight:600}
+.verdict.pass{color:var(--green)} .verdict.fail{color:var(--red)}
+.stat{font-size:13px;color:var(--text-2)}
+.resp pre{margin:0;padding:16px 18px;max-height:480px;overflow:auto;font-size:12.8px;line-height:1.6;background:var(--code-bg);white-space:pre-wrap;word-break:break-word}
+.t-k{color:var(--t-k)} .t-s{color:var(--t-s)} .t-n{color:var(--t-n)} .t-b{color:var(--t-b)} .t-z{color:var(--t-z)}
+.empty{padding:60px 20px;text-align:center;color:var(--text-2)}
+.empty b{display:block;font-size:20px;color:var(--text);margin-bottom:6px;letter-spacing:-.02em}
+.params-info{margin:14px 26px 0;font-size:13px;color:var(--text-2)}
+.params-info code{background:var(--fill-2);padding:1px 6px;border-radius:6px;font-size:12px;color:var(--text)}
+
+/* dialogs */
+dialog{border:0;border-radius:24px;padding:0;background:var(--surface);color:var(--text);width:min(560px,calc(100vw - 28px));box-shadow:0 30px 80px rgba(0,0,0,.35);max-height:calc(100vh - 40px)}
+dialog.wide{width:min(860px,calc(100vw - 28px))}
+dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+dialog[open]{animation:pop .45s var(--spring)}
+dialog[open]::backdrop{animation:fadeIn .35s var(--ease)}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+.dlg-head{display:flex;align-items:center;padding:22px 26px 6px}
+.dlg-head h2{font-size:22px;letter-spacing:-.03em;flex:1}
+.dlg-body{padding:6px 26px 22px;overflow:auto;max-height:calc(100vh - 190px)}
+.dlg-foot{display:flex;gap:10px;justify-content:flex-end;padding:0 26px 24px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.switch:last-child{border-bottom:0}
+.switch small{display:block;color:var(--text-2);font-size:12.5px}
+.tgl{position:relative;width:51px;height:31px;flex:none}
+.tgl input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1;margin:0}
+.tgl span{position:absolute;inset:0;border-radius:980px;background:var(--fill);transition:background .25s}
+.tgl span::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:transform .25s cubic-bezier(.3,.9,.4,1.1)}
+.tgl input:checked+span{background:#34c759}
+.tgl input:checked+span::after{transform:translateX(20px)}
+.help{font-size:12.5px;color:var(--text-2);margin-top:6px}
+.help a{color:var(--accent)}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 16px}
+.sum div{background:var(--fill-2);border-radius:14px;padding:12px 14px}
+.sum b{display:block;font-size:24px;letter-spacing:-.03em}
+.sum span{font-size:12px;color:var(--text-2)}
+.bar{height:6px;border-radius:99px;background:var(--fill);overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7a5cff,#0a84ff);transition:width .3s}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--text-2);padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.path{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+tr.clickable{cursor:pointer} tr.clickable:hover td{background:var(--fill-2)}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px) scale(.94);opacity:0;pointer-events:none;z-index:200;padding:12px 20px;border-radius:980px;font-size:14px;font-weight:500;
+  background:rgba(30,30,32,.92);color:#fff;backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35);transition:opacity .3s var(--ease),transform .5s var(--spring);max-width:min(560px,calc(100vw - 32px));text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.toast.error{background:rgba(215,0,21,.95)}
+
+
+/* ===== landing page (Apple-style scroll) ===== */
+html{scroll-behavior:smooth}
+section[id]{scroll-margin-top:60px}
+.nav-links{display:flex;gap:26px;margin-left:30px;font-size:13px}
+.nav-links a{color:var(--text-2);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.in-app .nav-links,.in-app .nav-cta{display:none}
+.nav.scrolled{box-shadow:0 1px 0 var(--line)}
+.hero-wrap{position:relative;overflow:hidden}
+.hero-wrap::before{content:"";position:absolute;inset:-10% -10% auto;height:680px;pointer-events:none;filter:blur(36px);
+  background:radial-gradient(38% 50% at 28% 32%,rgba(122,92,255,.24),transparent 70%),radial-gradient(38% 50% at 72% 22%,rgba(10,132,255,.22),transparent 70%),radial-gradient(30% 40% at 52% 62%,rgba(48,213,200,.18),transparent 70%)}
+.hero-wrap>*{position:relative}
+.hero{padding-bottom:0}
+.mock-wrap{perspective:1700px;max-width:1040px;margin:64px auto 0;padding:0 18px}
+.mock{transform-origin:50% 0;transform:rotateX(14deg) scale(.88);border-radius:22px;background:var(--surface);border:1px solid var(--line);
+  box-shadow:0 50px 120px rgba(0,0,0,.2),0 8px 30px rgba(0,0,0,.08);overflow:hidden;text-align:left;will-change:transform}
+.mock-bar{display:flex;gap:7px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.mock-bar i{width:11px;height:11px;border-radius:50%;background:#ff5f57}
+.mock-bar i:nth-child(2){background:#febc2e}.mock-bar i:nth-child(3){background:#28c840}
+.mock-bar span{margin:0 auto;font-size:12px;color:var(--text-2);background:var(--fill-2);padding:3px 18px;border-radius:99px}
+.mock-body{display:grid;grid-template-columns:240px 1fr;min-height:360px}
+.mock-side{padding:14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.mock-row{display:flex;gap:9px;align-items:center;font-size:12.5px;font-weight:500;padding:8px 9px;border-radius:10px}
+.mock-row.on{background:var(--accent-soft)}
+.mock-main{padding:22px 24px;min-width:0}
+.mock-main .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mock-main .top code{font-size:15px;font-weight:600}
+.mock-main pre{margin:16px 0 0;background:var(--code-bg);border-radius:14px;padding:16px 18px;font-size:12.5px;line-height:1.65;overflow:hidden}
+.mock-resp{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;font-size:12.5px;color:var(--text-2)}
+.shimmer{background:linear-gradient(100deg,var(--accent-soft) 30%,rgba(122,92,255,.28) 50%,var(--accent-soft) 70%);background-size:220% 100%;animation:shim 3.2s linear infinite}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+
+.lp{padding:clamp(64px,8vw,120px) 22px}
+.cta .lead{margin-left:auto;margin-right:auto}
+.wrap{max-width:1080px;margin:0 auto}
+.center{text-align:center}
+.kick{display:inline-block;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.02em;margin-bottom:14px}
+.h2{font-size:clamp(32px,5.4vw,58px);line-height:1.06;font-weight:700;letter-spacing:-.04em}
+.lead{font-size:clamp(17px,2.1vw,22px);color:var(--text-2);line-height:1.4;max-width:640px;margin-top:18px}
+.center .lead{margin-left:auto;margin-right:auto}
+
+.statement{padding:clamp(90px,17vw,210px) 22px}
+.words{max-width:1000px;margin:0 auto;font-size:clamp(30px,5.8vw,66px);font-weight:700;letter-spacing:-.04em;line-height:1.1}
+.words span{opacity:.18;transition:opacity .35s}
+.words span.lit{opacity:1}
+
+.rv{opacity:0;transform:translateY(36px) scale(.97);filter:blur(8px);transition:opacity 1s var(--ease),transform 1s var(--ease),filter 1s var(--ease);transition-delay:var(--d,0s)}
+.rv.in{opacity:1;transform:none;filter:none}
+
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:30px;padding:32px;overflow:hidden;position:relative;min-height:290px;box-shadow:var(--shadow)}
+.tile.s2{grid-column:span 2}.tile.s3{grid-column:span 3}.tile.s4{grid-column:span 4}
+.tile h3{font-size:clamp(22px,2.6vw,28px);letter-spacing:-.035em;line-height:1.12;margin-bottom:10px}
+.tile p{color:var(--text-2);font-size:15.5px;max-width:44ch}
+.tile .kick{margin-bottom:12px;font-size:12px;text-transform:uppercase;letter-spacing:.07em}
+.tile.hl{background:linear-gradient(150deg,#1d1d1f,#000);color:#f5f5f7;border-color:#000}
+.tile.hl p{color:#a1a1a6}.tile.hl .kick{color:#64b5ff}
+.chip-cloud{margin-top:26px}
+.chip-cloud span{display:inline-block;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;padding:7px 13px;border-radius:99px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);margin:0 8px 8px 0;color:#e5e5ea}
+.mini{margin:22px 0 0;background:var(--code-bg);border-radius:14px;padding:14px 16px;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-all}
+.tile .vis{margin-top:24px}
+.tile .seg{margin-top:2px}
+.tile .bar{margin:16px 0 12px}
+.tile .bar i{background:linear-gradient(90deg,#34c759,#30d5c8)}
+.bigstat{font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.mono-pill{display:inline-flex;align-items:center;gap:8px;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--fill-2);border-radius:99px;padding:9px 16px}
+.monos{display:flex;gap:10px;margin-top:22px}
+.mono-badge{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;letter-spacing:-.02em}
+@media (max-width:860px){.tile.s2,.tile.s3,.tile.s4{grid-column:span 6}.tile{min-height:0}}
+
+.steps{margin-top:40px}
+.step{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:56px 0;opacity:.32;transition:opacity .6s}
+.step.active{opacity:1}
+.step:nth-child(even) .step-txt{order:2}
+.num{width:42px;height:42px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;font-weight:700;margin-bottom:20px}
+.step h3{font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.04em;margin-bottom:12px}
+.step p{font-size:18px;color:var(--text-2);max-width:40ch;line-height:1.45}
+.step-vis{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:26px;box-shadow:var(--shadow);min-width:0}
+.step-vis .urlbar{box-shadow:none;padding:5px 5px 5px 18px}
+.step-vis .urlbar span{flex:1;font-size:13px;color:var(--text-2);font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.found{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+@media (max-width:860px){.step{grid-template-columns:1fr;gap:26px;padding:36px 0}.step:nth-child(even) .step-txt{order:0}}
+
+.providers{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:52px;text-align:left}
+.prov{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.prov .mono-badge{margin-bottom:16px}
+.prov h3{font-size:22px;letter-spacing:-.03em}
+.prov p{color:var(--text-2);font-size:14.5px;flex:1}
+.prov code{font-size:12px;background:var(--fill-2);padding:2px 8px;border-radius:7px;white-space:nowrap;display:inline-block;margin:2px 2px 0 0}
+.prov .btn{margin-top:18px;align-self:flex-start}
+@media (max-width:860px){.providers{grid-template-columns:1fr}}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center}
+.stats b{display:block;font-size:clamp(56px,9vw,112px);letter-spacing:-.06em;line-height:1;font-weight:700;background:linear-gradient(110deg,#7a5cff,#0a84ff 55%,#30d5c8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats span{display:block;margin-top:10px;font-size:16px;color:var(--text-2)}
+@media (max-width:700px){.stats{grid-template-columns:1fr;gap:44px}}
+
+.cta{text-align:center;padding-bottom:clamp(60px,9vw,110px)}
+.cta .urlbar{margin-top:34px}
+.foot{border-top:1px solid var(--line);padding:26px 22px 40px;text-align:center;font-size:13px;color:var(--text-3);line-height:1.6}
+.foot a{color:var(--text-2);text-decoration:none}.foot a:hover{color:var(--text)}.foot b{color:var(--text-2);font-weight:600}
+.foot .heart{display:inline-block;color:#ff3b5c;animation:beat 1.6s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+.prov-select{height:38px;border-radius:980px;border:0;background-color:var(--fill);padding:0 34px 0 16px;font-size:14px;font-weight:500;cursor:pointer;outline:0;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.prov-select option{color:#1d1d1f}
+.seg button{white-space:nowrap}
+.seg.full{display:flex;width:100%}.seg.full button{flex:1;justify-content:center;height:32px;padding:0 8px}
+@media (max-width:760px){.nav-links{display:none}.mock-body{grid-template-columns:1fr}.mock-side{display:none}.mock{transform:rotateX(8deg) scale(.94)}}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}.step{opacity:1}.words span{opacity:1}.mock{transform:none!important}.shimmer{animation:none}}
+
+/* ===== v1.1 additions ===== */
+.about-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:48px}
+.about-card{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:30px;box-shadow:var(--shadow)}
+.about-card h3{font-size:22px;letter-spacing:-.03em;margin-bottom:8px}
+.about-card p{color:var(--text-2);font-size:15.5px}
+.about-card ul{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px;color:var(--text-2);font-size:15px}
+.about-card li{display:flex;gap:10px}
+.about-card li::before{content:"✓";color:var(--green);font-weight:700}
+.stack{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:36px}
+.stack span{font-size:13px;font-weight:500;padding:8px 16px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--text-2)}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:22px}
+.flow span{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:var(--fill-2);border-radius:99px;padding:7px 13px}
+.flow i{color:var(--text-3);font-style:normal}
+.auto-auth{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:12.5px;background:var(--green-soft);color:var(--green);border-radius:12px;padding:7px 12px}
+.auto-auth b{font-weight:600}
+.auto-auth .link{color:var(--green);font-weight:600}
+.tabrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.tabrow .prov-select{height:32px;font-size:13px}
+.authgrid{display:grid;grid-template-columns:150px 1fr;gap:8px}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tscroll table{min-width:480px}
+.warn-bar{margin-top:10px;font-size:12.5px;background:var(--orange-soft);color:var(--orange);border-radius:12px;padding:8px 12px}
+@media (max-width:860px){.about-grid{grid-template-columns:1fr}}
+@media (max-width:560px){
+  .authgrid{grid-template-columns:1fr}
+  .dlg-head{padding:18px 18px 4px}.dlg-body{padding:6px 18px 18px}.dlg-foot{padding:0 18px 18px}
+  .dlg-head h2{font-size:20px}
+  td.path{max-width:150px}
+  .toolbar{gap:8px;padding:14px 18px}
+  .toolbar .spacer{display:none}
+  .toolbar .seg{width:100%}.toolbar .seg button{flex:1;justify-content:center}
+  .toolbar .prov-select{flex:1 1 100%;min-width:0;height:38px}
+  #runProgress .tscroll table{min-width:0}
+  #runProgress th:nth-child(4),#runProgress td:nth-child(4){display:none}
+  #runProgress th,#runProgress td{padding-left:6px;padding-right:6px}
+  #runProgress td.path{max-width:112px}
+  #runProgress .m{min-width:44px;font-size:10px}
+  #runProgress .status{padding:3px 8px;font-size:12px}
+  .sum b{font-size:22px}
+  .toolbar .btn{flex:1}
+  .d-path code{font-size:16px}
+  .tile{padding:24px;border-radius:26px}
+  .hero{padding-top:44px}
+}
+
+/* ===== settings drawer (slides in from the right) ===== */
+dialog.drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(480px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;border-radius:28px 0 0 28px;
+  display:none;flex-direction:column;box-shadow:-30px 0 80px rgba(0,0,0,.28)}
+dialog.drawer[open]{display:flex;animation:drawerIn .42s cubic-bezier(.22,.9,.26,1)}
+dialog.drawer.closing{animation:drawerOut .28s cubic-bezier(.4,0,1,1) forwards}
+@keyframes drawerIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes drawerOut{from{transform:none}to{transform:translateX(100%)}}
+dialog.drawer .dlg-head{flex:none;padding:26px 28px 8px}
+dialog.drawer .dlg-body{flex:1;min-height:0;max-height:none;overflow:auto;padding:4px 28px 28px;overscroll-behavior:contain}
+dialog.drawer .dlg-foot{flex:none;padding:16px 28px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}
+.sec{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin:30px 0 2px;padding-top:22px;border-top:1px solid var(--line)}
+.sec.first{margin-top:6px;padding-top:0;border-top:0}
+@media (max-width:560px){
+  dialog.drawer{width:100vw;border-radius:0}
+  dialog.drawer .dlg-head{padding:18px 20px 6px}
+  dialog.drawer .dlg-body{padding:4px 20px 22px}
+  dialog.drawer .dlg-foot{padding:14px 20px calc(16px + env(safe-area-inset-bottom))}
+}
+
+.test-row{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.test-res{font-size:13px;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.test-res.ok{color:var(--green)}.test-res.bad{color:var(--red)}
+
+/* ===== Apple-style motion ===== */
+:root{--ease:cubic-bezier(.28,.11,.32,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes blurIn{from{opacity:0;transform:translateY(22px) scale(.98);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes drift{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(3%,-4%,0) scale(1.08)}}
+@keyframes gradMove{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes shake{0%,100%{translate:0}20%{translate:-5px}40%{translate:5px}60%{translate:-3px}80%{translate:3px}}
+.hero>*{animation:blurIn .95s var(--ease) backwards}
+.hero>*:nth-child(1){animation-delay:.05s}.hero>*:nth-child(2){animation-delay:.15s}.hero>*:nth-child(3){animation-delay:.28s}
+.hero>*:nth-child(4){animation-delay:.4s}.hero>*:nth-child(5){animation-delay:.52s}.hero>*:nth-child(6){animation-delay:.62s}.hero>*:nth-child(n+7){animation-delay:.72s}
+.hero-wrap::before{animation:drift 16s ease-in-out infinite}
+.grad{background-size:200% 200%;animation:gradMove 9s ease-in-out infinite}
+#scrollBar{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);z-index:120;background:linear-gradient(90deg,#0a84ff,#7a5cff,#30d5c8);pointer-events:none}
+body.in-app #scrollBar{display:none}
+.tile,.about-card,.prov{transition:translate .5s var(--spring),box-shadow .5s var(--ease)}
+.tile:hover,.about-card:hover,.prov:hover{translate:0 -6px;box-shadow:0 30px 70px rgba(0,0,0,.16)}
+.tile::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%),rgba(10,132,255,.12),transparent 60%)}
+.tile:hover::after{opacity:1}
+.btn{transition:transform .35s var(--spring),background .2s,box-shadow .3s,opacity .2s}
+.btn:not(:disabled):hover{transform:scale(1.035)}.btn:not(:disabled):active{transform:scale(.96)}
+.btn.primary.lg{position:relative;overflow:hidden}
+.btn.primary.lg::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-120%);animation:shine 5s var(--ease) 1.5s infinite}
+@keyframes shine{0%,70%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.row:hover{transform:translateX(3px)}.row{transition:background .15s,transform .35s var(--spring)}
+#app:not([hidden]) .side{animation:slideRight .7s var(--ease) backwards}
+#app:not([hidden]) .detail{animation:fadeUp .8s var(--ease) .1s backwards}
+.list-enter .row{animation:fadeUp .5s var(--ease) backwards;animation-delay:calc(min(var(--i,0),14) * 28ms)}
+.detail.swap{animation:fadeUp .45s var(--ease)}
+.resp.fresh{animation:slideDown .5s var(--ease)}
+.resp.fresh .verdict{animation:popIn .5s var(--spring) .1s backwards}
+.resp.fresh.bad{animation:slideDown .5s var(--ease),shake .5s var(--ease) .1s}
+#runRows tr{animation:fadeUp .4s var(--ease) backwards}
+#runRows .chip,#runRows .pill{animation:popIn .4s var(--spring) backwards}
+.d-head .chip.ai{animation:fadeIn .6s var(--ease)}
+.step .num{transition:transform .6s var(--spring),background .4s,color .4s}
+.step.active .num{transform:scale(1.15)}
+.drawer .dlg-body>*{animation:fadeUp .6s var(--ease) backwards}
+.drawer .dlg-body>*:nth-child(2){animation-delay:.05s}.drawer .dlg-body>*:nth-child(3){animation-delay:.08s}.drawer .dlg-body>*:nth-child(4){animation-delay:.11s}.drawer .dlg-body>*:nth-child(n+5){animation-delay:.14s}
+html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:background-color .65s var(--ease),color .65s var(--ease),border-color .65s var(--ease),box-shadow .65s var(--ease)!important}
+#landing.leaving{animation:fadeOut .35s var(--ease) forwards}
+@keyframes fadeOut{to{opacity:0;transform:scale(.985)}}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important;filter:none!important}.hero>*{animation:none!important}}
+
+.ai-warn{margin:14px 26px 0;padding:11px 14px;border-radius:12px;background:var(--orange-soft);color:var(--orange);font-size:13px;font-weight:500;line-height:1.45}
+.ai-warn .link{font-size:13px;margin-left:6px}
+@media (max-width:980px){
+  .app{grid-template-columns:1fr;padding:12px}
+  .side{position:static;max-height:none}
+  .list{max-height:300px}
+  .sum{grid-template-columns:repeat(2,1fr)}
+  .d-head,.toolbar,.editor{padding-left:18px;padding-right:18px}
+  .resp,.params-info{margin-left:18px;margin-right:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="scrollBar" aria-hidden="true"></div>
+<header class="nav">
+  <div class="brand">
+    <div class="logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+    Swagger AI Tester
+  </div>
+  <nav class="nav-links"><a href="#features">Features</a><a href="#how">How it works</a><a href="#models">AI models</a><a href="/about.html">About</a></nav>
+  <div class="spacer"></div>
+  <button class="btn primary sm nav-cta" id="navCta">Get started</button>
+  <button class="btn sm" id="newSpecBtn" hidden>New spec</button>
+  <button class="icon-btn" id="themeBtn" title="Theme" aria-label="Toggle theme">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>
+  </button>
+  <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+  </button>
+</header>
+
+<!-- LANDING -->
+<div id="landing">
+
+<section class="hero-wrap" id="top">
+  <div class="hero">
+    <div class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg>
+      Works with OpenAI · Claude · Hugging Face
+    </div>
+    <h1>Test every API.<br><span class="grad">Without writing a payload.</span></h1>
+    <p class="sub">Paste any Swagger or OpenAPI link — localhost or live. AI reads every endpoint, writes the request, and runs it for you.</p>
+    <form class="urlbar urlForm">
+      <input id="urlInput" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://localhost:5001/swagger/v1/swagger.json" aria-label="Swagger URL">
+      <button class="btn primary lg" type="submit">Load APIs</button>
+    </form>
+    <div class="links">
+      <span>Try it:</span>
+      <button class="link" data-demo="https://petstore3.swagger.io/api/v3/openapi.json">Petstore demo</button>
+      <span>·</span>
+      <button class="link" data-open-settings>Add your AI key</button>
+    </div>
+  </div>
+
+  <div class="mock-wrap" aria-hidden="true">
+    <div class="mock" id="mock">
+      <div class="mock-bar"><i></i><i></i><i></i><span>localhost:7184/swagger</span></div>
+      <div class="mock-body">
+        <div class="mock-side">
+          <div class="mock-row"><span class="m GET">GET</span>/api/orders</div>
+          <div class="mock-row on"><span class="m POST">POST</span>/api/orders</div>
+          <div class="mock-row"><span class="m GET">GET</span>/api/orders/{id}</div>
+          <div class="mock-row"><span class="m PUT">PUT</span>/api/orders/{id}</div>
+          <div class="mock-row"><span class="m GET">GET</span>/api/customers</div>
+          <div class="mock-row"><span class="m POST">POST</span>/api/auth/login</div>
+          <div class="mock-row"><span class="m DELETE">DELETE</span>/api/orders/{id}</div>
+        </div>
+        <div class="mock-main">
+          <div class="top"><span class="m POST">POST</span><code>/api/orders</code><span class="chip ai shimmer">✦ Claude payload</span></div>
+<pre><span class="t-z">{</span>
+  <span class="t-k">"customerId"</span>: <span class="t-n">1042</span>,
+  <span class="t-k">"email"</span>: <span class="t-s">"aarav.sharma@example.com"</span>,
+  <span class="t-k">"items"</span>: [ { <span class="t-k">"sku"</span>: <span class="t-s">"KB-2210"</span>, <span class="t-k">"qty"</span>: <span class="t-n">2</span> } ],
+  <span class="t-k">"paid"</span>: <span class="t-b">true</span>
+<span class="t-z">}</span></pre>
+          <div class="mock-resp"><span class="status ok">201 Created</span><span class="verdict pass">✓ As expected</span><span>86 ms · 214 B</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="statement">
+  <p class="words" id="statement">Writing payloads by hand is over. Paste a link, and let AI do the rest.</p>
+</section>
+
+<section class="lp" id="features" style="padding-top:0">
+  <div class="wrap">
+    <div class="center rv"><span class="kick">Features</span><h2 class="h2">Everything you test by hand.<br><span class="grad">Done in one click.</span></h2></div>
+    <div class="bento">
+      <div class="tile s4 hl rv"><div class="kick">Auto-discovery</div><h3>Paste any link.<br>It finds the spec.</h3><p>Swagger UI page, swagger.json, v3/api-docs, YAML — even just <b>localhost:5000</b>.</p>
+        <div class="chip-cloud"><span>/swagger/v1/swagger.json</span><span>/v3/api-docs</span><span>/openapi.json</span><span>/swagger-ui/index.html</span><span>openapi.yaml</span><span>/docs</span></div></div>
+      <div class="tile s2 rv" style="--d:.08s"><div class="kick">AI payloads</div><h3>Realistic data, from your schema.</h3><p>Required fields, enums, formats — all respected.</p>
+<pre class="mini"><span class="t-k">"name"</span>: <span class="t-s">"Aarav Sharma"</span>,
+<span class="t-k">"age"</span>: <span class="t-n">29</span>,
+<span class="t-k">"role"</span>: <span class="t-s">"admin"</span></pre></div>
+
+      <div class="tile s2 rv"><div class="kick">Test types</div><h3>Valid. Negative. Edge.</h3><p>Check the happy path and the failures.</p>
+        <div class="vis"><div class="seg"><button class="on">Valid</button><button>Negative</button><button>Edge</button></div></div></div>
+      <div class="tile s2 rv" style="--d:.08s"><div class="kick">Run all</div><h3>Every endpoint, one click.</h3>
+        <div class="bar"><i style="width:100%"></i></div><div style="display:flex;align-items:baseline;gap:10px"><span class="bigstat">24/24</span><span style="color:var(--text-2)">passed</span></div></div>
+      <div class="tile s2 rv" style="--d:.16s"><div class="kick">Localhost ready</div><h3>No CORS. No certificate pain.</h3><p>Self-signed HTTPS just works.</p>
+        <div class="vis"><span class="mono-pill">🔒 https://localhost:7184</span></div></div>
+
+      <div class="tile s3 rv"><div class="kick">Bring your own AI</div><h3>OpenAI, Claude or Hugging Face.</h3><p>Use the key you already have. Switch model per project, any time.</p>
+        <div class="monos"><div class="mono-badge" style="background:linear-gradient(135deg,#10a37f,#0b7a60)">O</div><div class="mono-badge" style="background:linear-gradient(135deg,#d97757,#b85c3c)">C</div><div class="mono-badge" style="background:linear-gradient(135deg,#ffb800,#ff8a00)">HF</div></div></div>
+      <div class="tile s3 rv" style="--d:.08s"><div class="kick">Reports &amp; cURL</div><h3>Take the results with you.</h3><p>Export a JSON pass/fail report or copy any request as cURL.</p>
+<pre class="mini">curl -X POST 'http://localhost:5055/api/products' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Aarav","price":249.99}'</pre></div>
+
+      <div class="tile s3 rv"><div class="kick">Smart data</div><h3>Register APIs get fresh data. Every time.</h3><p>A unique email, username and phone on every run — no more “already exists” errors.</p>
+<pre class="mini"><span class="t-k">"email"</span>: <span class="t-s">"aarav.sharma.7f3a9c21@testmail.dev"</span>,
+<span class="t-k">"username"</span>: <span class="t-s">"aarav4be1d2"</span>,
+<span class="t-k">"phone"</span>: <span class="t-s">"9830012745"</span></pre></div>
+      <div class="tile s3 rv" style="--d:.08s"><div class="kick">Chained flows</div><h3>Register → login → token → the rest.</h3><p>It logs in with the account it just created, then reuses the token and created IDs for every next call.</p>
+        <div class="flow"><span>POST /register</span><i>→</i><span>POST /login</span><i>→</i><span>🔑 token</span><i>→</i><span>GET /users/{id}</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp" id="how" style="padding-top:20px">
+  <div class="wrap">
+    <div class="rv"><span class="kick">How it works</span><h2 class="h2">Three steps.<br><span class="grad">Zero JSON.</span></h2></div>
+    <div class="steps">
+      <div class="step rv">
+        <div class="step-txt"><div class="num">1</div><h3>Paste your Swagger link.</h3><p>Localhost, staging or production. We find the spec and list every endpoint.</p></div>
+        <div class="step-vis"><div class="urlbar"><span>https://localhost:7184/swagger</span><button class="btn primary sm" tabindex="-1">Load APIs</button></div>
+          <div class="found"><span class="m GET">GET</span><span class="m POST">POST</span><span class="m PUT">PUT</span><span class="m PATCH">PATCH</span><span class="m DELETE">DELETE</span><span class="chip">24 endpoints found</span></div></div>
+      </div>
+      <div class="step rv">
+        <div class="step-txt"><div class="num">2</div><h3>AI writes the payload.</h3><p>Path params, query, headers and body — generated from the schema and checked against it.</p></div>
+        <div class="step-vis"><div class="chip ai shimmer" style="display:inline-block;margin-bottom:12px">✦ Generate with AI</div>
+<pre class="mini" style="margin-top:0"><span class="t-z">{</span>
+  <span class="t-k">"title"</span>: <span class="t-s">"Wireless keyboard"</span>,
+  <span class="t-k">"price"</span>: <span class="t-n">2499</span>,
+  <span class="t-k">"inStock"</span>: <span class="t-b">true</span>
+<span class="t-z">}</span></pre></div>
+      </div>
+      <div class="step rv">
+        <div class="step-txt"><div class="num">3</div><h3>Run it. See the result.</h3><p>Status, timing, headers and body — with a clear pass or fail against what you expected.</p></div>
+        <div class="step-vis"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="status ok">201 Created</span><span class="verdict pass">✓ As expected</span><span class="stat">86 ms</span></div>
+<pre class="mini"><span class="t-z">{</span> <span class="t-k">"id"</span>: <span class="t-n">42</span>, <span class="t-k">"title"</span>: <span class="t-s">"Wireless keyboard"</span> <span class="t-z">}</span></pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp center" id="models">
+  <div class="wrap">
+    <div class="rv"><span class="kick">AI models</span><h2 class="h2">Bring your own AI.</h2><p class="lead">Use the model you already pay for. Keys are stored in your browser and sent only to the provider you choose.</p></div>
+    <div class="providers">
+      <div class="prov rv"><div class="mono-badge" style="background:linear-gradient(135deg,#ffb800,#ff8a00)">HF</div><h3>Hugging Face</h3><p>Open models through Inference Providers. A free token is enough to start. <code>Llama 3.3</code> <code>Qwen 2.5</code></p><button class="btn" data-open-settings data-provider="huggingface">Add token</button></div>
+      <div class="prov rv" style="--d:.04s"><div class="mono-badge" style="background:linear-gradient(135deg,#555,#111)">OL</div><h3>Ollama</h3><p>Use your Ollama API key (cloud, nothing to install) or run it free on your own PC. <code>gpt-oss</code> <code>llama3.2</code></p><button class="btn" data-open-settings data-provider="ollama">Add API key</button></div>
+      <div class="prov rv" style="--d:.08s"><div class="mono-badge" style="background:linear-gradient(135deg,#10a37f,#0b7a60)">O</div><h3>OpenAI</h3><p>Use your OpenAI API key with the GPT model of your choice. <code>gpt-4o-mini</code> <code>gpt-4.1</code></p><button class="btn" data-open-settings data-provider="openai">Add API key</button></div>
+      <div class="prov rv" style="--d:.16s"><div class="mono-badge" style="background:linear-gradient(135deg,#d97757,#b85c3c)">C</div><h3>Claude</h3><p>Use your Anthropic API key for careful, schema-accurate payloads. <code>Sonnet</code> <code>Haiku</code> <code>Opus</code></p><button class="btn" data-open-settings data-provider="anthropic">Add API key</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp" style="padding-top:20px">
+  <div class="wrap stats">
+    <div class="rv"><b class="count" data-count="3">0</b><span>AI providers</span></div>
+    <div class="rv" style="--d:.1s"><b class="count" data-count="2">0</b><span>Spec standards — Swagger 2 &amp; OpenAPI 3</span></div>
+    <div class="rv" style="--d:.2s"><b class="count" data-count="1">0</b><span>Click to run every API</span></div>
+  </div>
+</section>
+
+<section class="lp cta" id="start">
+  <div class="wrap rv">
+    <h2 class="h2">Ready when you are.</h2>
+    <p class="lead">Paste a Swagger link and see every API tested in seconds.</p>
+    <form class="urlbar urlForm">
+      <input type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://localhost:5001/swagger/v1/swagger.json" aria-label="Swagger URL">
+      <button class="btn primary lg" type="submit">Load APIs</button>
+    </form>
+  </div>
+</section>
+
+<footer class="foot">Made with <span class="heart" aria-label="love">❤</span> by <b>Ankit</b> · <a href="/about.html">About</a></footer>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" hidden>
+  <aside class="card side">
+    <div class="side-head">
+      <div class="api-title"><span id="apiTitle"></span><span class="pill" id="apiVer"></span></div>
+      <div class="meta" id="apiMeta"></div>
+      <div class="warn-bar" id="foreignBar" hidden></div>
+      <div class="auto-auth" id="autoAuth" hidden></div>
+      <label class="field-label" for="baseUrl">Base URL</label>
+      <input class="input mono" id="baseUrl" spellcheck="false" list="baseList" style="font-size:13px">
+      <datalist id="baseList"></datalist>
+    </div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input class="input" id="search" placeholder="Search endpoints" autocomplete="off">
+    </div>
+    <div class="list" id="list"></div>
+    <div class="side-foot"><button class="btn primary" id="runAllBtn">Run all APIs</button></div>
+  </aside>
+
+  <section class="card detail" id="detail"></section>
+</div>
+
+<!-- SETTINGS (slides in from the right) -->
+<dialog id="settingsDlg" class="drawer" aria-labelledby="settingsTitle">
+  <div class="dlg-head"><h2 id="settingsTitle">Settings</h2><button class="icon-btn" data-close aria-label="Close settings"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="dlg-body">
+    <div class="sec first">AI provider</div>
+    <div class="seg full" id="provSeg">
+      <button data-p="huggingface">Hugging Face</button><button data-p="ollama">Ollama</button><button data-p="openai">OpenAI</button><button data-p="anthropic">Claude</button>
+    </div>
+
+    <label class="field-label" for="sKey" id="keyLabel">API key</label>
+    <input class="input mono" id="sKey" type="password" autocomplete="off" spellcheck="false">
+    <p class="help" id="keyHelp"></p>
+    <div class="test-row"><button class="btn sm" id="testKey" type="button">Test connection</button><span class="test-res" id="testRes" role="status"></span></div>
+
+    <label class="field-label" for="sModel">Model</label>
+    <input class="input mono" id="sModel" list="models" spellcheck="false">
+    <datalist id="models"></datalist>
+    <p class="help">Each provider keeps its own key and model. The provider selected here is the one that gets used.</p>
+
+    <div class="sec">Your API</div>
+    <label class="field-label" for="sAuthName">Auth header (optional)</label>
+    <div class="authgrid">
+      <input class="input mono" id="sAuthName" placeholder="Authorization" spellcheck="false">
+      <input class="input mono" id="sAuthVal" type="password" placeholder="Bearer eyJhbGciOi…" autocomplete="off" spellcheck="false">
+    </div>
+    <p class="help">Added to every request (JWT / API key). Leave it empty to use the token captured automatically after login.</p>
+    <div class="switch" style="margin-top:8px">
+      <div>Allow self-signed HTTPS<small>Always allowed for localhost. Turn this on for other hosts.</small></div>
+      <label class="tgl"><input type="checkbox" id="sInsecure"><span></span></label>
+    </div>
+
+    <div class="sec">Test data</div>
+    <label class="field-label" for="sDomain">Test email domain</label>
+    <input class="input mono" id="sDomain" placeholder="example.com" spellcheck="false" autocapitalize="off">
+    <p class="help">Register APIs get a unique email on this domain, like <code class="mono">aarav.sharma.7f3a9c21@example.com</code>. If your server rejects example.com, use your own domain.</p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close>Cancel</button><button class="btn primary" id="saveSettings">Save</button></div>
+</dialog>
+
+<!-- RUN ALL -->
+<dialog id="runDlg" class="wide">
+  <div class="dlg-head"><h2 id="runTitle">Run all APIs</h2><button class="icon-btn" data-close aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="dlg-body">
+    <div id="runOpts">
+      <div class="switch"><div>Use AI for payloads<small id="aiHelp">A fresh payload for every endpoint</small></div><label class="tgl"><input type="checkbox" id="oAI"><span></span></label></div>
+      <div class="switch"><div>Skip DELETE requests<small>Keeps your data from being deleted (recommended)</small></div><label class="tgl"><input type="checkbox" id="oSkipDel" checked><span></span></label></div>
+      <div class="switch"><div>Skip PUT / PATCH requests<small>Existing data will not be modified</small></div><label class="tgl"><input type="checkbox" id="oSkipMod"><span></span></label></div>
+      <div class="switch"><div>Test type<small>Valid should return 2xx · Negative should return 4xx</small></div>
+        <div class="seg" id="oScenario"><button data-v="valid" class="on">Valid</button><button data-v="negative">Negative</button><button data-v="edge">Edge</button></div></div>
+      <p class="help" style="margin-top:12px">Order: register → login → create → read → update → delete. Register sends unique data; the login token and created IDs are reused automatically in later calls.</p>
+      <p class="help">⚠️ This runs every API against the real server. Think twice before running it against production.</p>
+    </div>
+    <div id="runProgress" hidden>
+      <div class="sum"><div><b id="sTotal">0</b><span>Total</span></div><div><b id="sPass" style="color:var(--green)">0</b><span>Passed</span></div><div><b id="sFail" style="color:var(--red)">0</b><span>Failed</span></div><div><b id="sAvg">0</b><span>Avg ms</span></div></div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="tscroll"><table><thead><tr><th style="width:70px">Method</th><th>Endpoint</th><th style="width:80px">Status</th><th style="width:70px">Time</th><th style="width:80px">Result</th></tr></thead><tbody id="runRows"></tbody></table></div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="exportBtn" hidden>Export report</button>
+    <button class="btn" id="stopBtn" hidden>Stop</button>
+    <button class="btn primary" id="startRun">Start</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const escText = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ---------- settings / theme ---------- */
+const LS = 'sat.settings.v2';
+const PROVIDERS = {
+  huggingface: {
+    label: 'Hugging Face', model: 'meta-llama/Llama-3.1-8B-Instruct', ph: 'hf_xxxxxxxxxxxxxxxx',
+    models: ['meta-llama/Llama-3.1-8B-Instruct', 'Qwen/Qwen2.5-7B-Instruct', 'meta-llama/Llama-3.2-3B-Instruct', 'Qwen/Qwen2.5-Coder-32B-Instruct', 'meta-llama/Llama-3.3-70B-Instruct'],
+    help: 'Create a token at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens</a> (permission: <i>Make calls to Inference Providers</i>).',
+  },
+  ollama: {
+    label: 'Ollama', model: 'gpt-oss:20b', ph: 'Ollama API key (leave empty for local Ollama)', keyOptional: true,
+    models: ['gpt-oss:20b', 'gpt-oss:120b', 'kimi-k2.6', 'deepseek-v4-flash', 'glm-5', 'llama3.2', 'qwen2.5:7b'],
+    help: 'Create an API key at <a href="https://ollama.com/settings/keys" target="_blank" rel="noopener">ollama.com/settings/keys</a> — it runs on Ollama Cloud, nothing to install. No key? Leave it empty to use Ollama installed on this computer (then pick a model you pulled, e.g. <code>llama3.2</code>).',
+  },
+  openai: {
+    label: 'OpenAI', model: 'gpt-4o-mini', ph: 'sk-…',
+    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1'],
+    help: 'Create a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. API usage is billed separately.',
+  },
+  anthropic: {
+    label: 'Claude', model: 'claude-sonnet-5-5', ph: 'sk-ant-…',
+    models: ['claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-opus-5-5'],
+    help: 'Create a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a>. A Claude app subscription is separate — API keys come from the Console.',
+  },
+};
+const defaults = { provider: 'huggingface', keys: {}, models: {}, authName: 'Authorization', authValue: '', insecure: false, theme: '', emailDomain: 'example.com' };
+let settings = { ...defaults, keys: {}, models: {} };
+try {
+  const raw = JSON.parse(localStorage.getItem(LS) || localStorage.getItem('sat.settings.v1') || '{}');
+  settings = { ...defaults, ...raw, keys: { ...(raw.keys || {}) }, models: { ...(raw.models || {}) } };
+  if (raw.hfToken && !settings.keys.huggingface) { settings.keys.huggingface = raw.hfToken; if (raw.model) settings.models.huggingface = raw.model; }
+  delete settings.hfToken; delete settings.model;
+  if (!PROVIDERS[settings.provider]) settings.provider = 'huggingface';
+} catch {}
+const saveSettings = () => { try { localStorage.setItem(LS, JSON.stringify(settings)); } catch {} };
+
+let envKeys = {}; // keys set as environment variables on the server
+fetch('/api/health').then((r) => r.json()).then((d) => { envKeys = d.env || {}; }).catch(() => {});
+const keyOf = (p = settings.provider) => settings.keys[p] || '';
+const modelOf = (p = settings.provider) => settings.models[p] || PROVIDERS[p].model;
+const hasKey = (p = settings.provider) => !!(settings.keys[p] || envKeys[p]) || (!!PROVIDERS[p].keyOptional && settings.provider === p);
+const anyKey = () => Object.keys(PROVIDERS).some((p) => hasKey(p));
+
+function applyTheme() {
+  const t = settings.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = t;
+}
+applyTheme();
+$('#themeBtn').onclick = () => {
+  const cur = document.documentElement.dataset.theme;
+  settings.theme = cur === 'dark' ? 'light' : 'dark';
+  const root = document.documentElement; root.classList.add('theme-anim'); clearTimeout(window._ta); window._ta = setTimeout(() => root.classList.remove('theme-anim'), 700);
+  saveSettings(); applyTheme();
+};
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, kind = '') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + kind;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.className = 'toast ' + kind), kind === 'error' ? 6000 : 3200);
+}
+
+/* ---------- api helper ---------- */
+async function api(path, body) {
+  const r = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+  return data;
+}
+
+/* ---------- state ---------- */
+const state = { spec: null, endpoints: [], selected: null, store: {}, baseUrl: '', filter: '', tab: 'query', respTab: 'body' };
+
+const pretty = (v) => (v === undefined ? '' : typeof v === 'string' ? v : JSON.stringify(v, null, 2));
+const countKeys = (txt) => { try { const o = JSON.parse(txt); return o && typeof o === 'object' ? Object.keys(o).length : 0; } catch { return 0; } };
+
+
+/* ---------- concrete test data: {{tokens}} are turned into real values the user can see ---------- */
+const NAMES_F = ['Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan', 'Ananya', 'Diya', 'Aadhya', 'Saanvi', 'Myra', 'Anika', 'Kavya', 'Riya', 'Meera', 'Priya'];
+const NAMES_L = ['Sharma', 'Verma', 'Gupta', 'Singh', 'Patel', 'Reddy', 'Nair', 'Iyer', 'Mehta', 'Joshi', 'Kapoor', 'Malhotra', 'Bose', 'Das', 'Khan'];
+const rpick = (a) => a[Math.floor(Math.random() * a.length)];
+const hex8 = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, '0')).join('');
+function makeCtx() { return { first: rpick(NAMES_F), last: rpick(NAMES_L), uid: hex8(), domain: (settings.emailDomain || 'example.com').replace(/^@/, '') }; }
+const TOKEN_FN = {
+  email: (c) => `${c.first}.${c.last}.${c.uid}@${c.domain}`.toLowerCase(),
+  username: (c) => `${c.first.slice(0, 5)}${c.uid.slice(0, 6)}`.toLowerCase(),
+  phone: () => rpick(['6', '7', '8', '9']) + String(Math.floor(Math.random() * 1e9)).padStart(9, '0'),
+  uuid: () => crypto.randomUUID(),
+  firstName: (c) => c.first, lastName: (c) => c.last, name: (c) => `${c.first} ${c.last}`,
+  timestamp: () => String(Date.now()), random: () => String(100000 + Math.floor(Math.random() * 900000)),
+  date: () => new Date().toISOString().slice(0, 10), datetime: () => new Date().toISOString(),
+};
+const hasTokens = (t) => /\{\{\s*[A-Za-z]+\s*\}\}/.test(t || '');
+function fillText(t, ctx) { return t.replace(/\{\{\s*([A-Za-z]+)\s*\}\}/g, (m, k) => (TOKEN_FN[k] ? TOKEN_FN[k](ctx) : m)); }
+const FIELDS = ['pathParams', 'query', 'headers', 'body'];
+// Keeps the token version (st.tpl) and shows real values. Re-run on every request so each run sends fresh data.
+function concretize(st, { fresh = false } = {}) {
+  st.tpl = st.tpl || {}; st.auto = st.auto || {};
+  const ctx = makeCtx();
+  for (const f of FIELDS) {
+    if (fresh) { // only refresh values that are still exactly what we generated (not edited by the user)
+      if (!st.tpl[f] || st[f] !== st.auto[f]) continue;
+    } else if (!hasTokens(st[f])) { delete st.tpl[f]; delete st.auto[f]; continue; }
+    else st.tpl[f] = st[f];
+    st[f] = st.auto[f] = fillText(st.tpl[f], ctx);
+  }
+}
+
+function ensure(ep) {
+  if (!state.store[ep.id]) {
+    const s = ep.sample || {};
+    state.store[ep.id] = {
+      pathParams: pretty(s.pathParams || {}), query: pretty(s.query || {}), headers: pretty(s.headers || {}), body: ep.body ? pretty(s.body) : '',
+      scenario: 'valid', source: 'schema', result: null, verdict: null,
+    };
+    concretize(state.store[ep.id]);
+  }
+  return state.store[ep.id];
+}
+
+/* ---------- loading a spec ---------- */
+async function loadSpec(url, btn) {
+  btn = btn || $('.urlForm button[type=submit]');
+  const old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Loading';
+  try {
+    const data = await api('/api/spec', { url, insecure: settings.insecure });
+    state.spec = data; state.endpoints = data.endpoints; state.store = {}; state.selected = null; state.filter = '';
+    state.baseUrl = data.baseUrls[0]; resetChain();
+    const L = $('#landing'); L.classList.add('leaving'); await new Promise((r) => setTimeout(r, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300)); L.classList.remove('leaving');
+    L.hidden = true; $('#app').hidden = false; $('#newSpecBtn').hidden = false; document.body.classList.add('in-app'); window.scrollTo({ top: 0 }); state.listEnter = true;
+    $('#apiTitle').textContent = data.title;
+    $('#apiVer').textContent = data.version ? 'v' + data.version : data.format;
+    $('#apiMeta').textContent = `${data.endpoints.length} endpoints · ${data.format}${data.groups > 1 ? ` · ${data.groups} groups` : ''}`;
+    const fb = $('#foreignBar'); fb.hidden = !data.foreign; fb.textContent = data.foreign ? 'No spec was found on this link\'s own server — a spec from another site was loaded. Please check the Base URL.' : '';
+    $('#baseUrl').value = state.baseUrl;
+    $('#baseList').innerHTML = data.baseUrls.map((b) => `<option value="${escHtml(b)}"></option>`).join('');
+    $('#search').value = '';
+    renderList();
+    if (data.endpoints.length) select(data.endpoints[0].id);
+    else $('#detail').innerHTML = '<div class="empty"><b>No endpoints found</b>This spec has no paths.</div>';
+    if (data.foreign) toast('Loaded a spec from another site — check the Base URL.', 'error'); else toast(`${data.endpoints.length} APIs found ✓`);
+    window.scrollTo({ top: 0 });
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = old;
+  }
+}
+
+$$('.urlForm').forEach((f) => f.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = $('input', f).value.trim();
+  if (!v) return toast('Paste a Swagger / OpenAPI link.', 'error');
+  $$('.urlForm input').forEach((i) => (i.value = v));
+  loadSpec(v, $('button[type=submit]', f));
+}));
+$$('[data-demo]').forEach((b) => (b.onclick = () => { $$('.urlForm input').forEach((i) => (i.value = b.dataset.demo)); loadSpec(b.dataset.demo); }));
+$('#newSpecBtn').onclick = () => { $('#app').hidden = true; $('#landing').hidden = false; $('#newSpecBtn').hidden = true; document.body.classList.remove('in-app'); window.scrollTo({ top: 0 }); $('#landing').style.animation = 'fadeUp .6s var(--ease)'; setTimeout(() => $('#urlInput').focus({ preventScroll: true }), 50); };
+$('#baseUrl').addEventListener('input', (e) => (state.baseUrl = e.target.value.trim()));
+
+/* ---------- sidebar ---------- */
+function renderList() {
+  const q = state.filter.toLowerCase();
+  const groups = new Map();
+  for (const ep of state.endpoints) {
+    if (q && !(`${ep.method} ${ep.path} ${ep.summary} ${ep.tags.join(' ')}`.toLowerCase().includes(q))) continue;
+    for (const t of ep.tags.slice(0, 1)) { if (!groups.has(t)) groups.set(t, []); groups.get(t).push(ep); }
+  }
+  if (!groups.size) { $('#list').innerHTML = '<div class="empty" style="padding:30px 10px">No matches</div>'; return; }
+  let html = '';
+  for (const [tag, eps] of groups) {
+    html += `<div class="tag">${escHtml(tag)}</div>`;
+    for (const ep of eps) {
+      const st = state.store[ep.id];
+      html += `<button class="row ${state.selected === ep.id ? 'active' : ''}" data-id="${escHtml(ep.id)}">
+        <span class="m ${ep.method}">${ep.method}</span>
+        <span class="p">${escHtml(ep.path)}${ep.summary ? `<small>${escHtml(ep.summary)}</small>` : ''}</span>
+        <span class="dot ${st?.verdict || ''}"></span></button>`;
+    }
+  }
+  $('#list').innerHTML = html;
+  const lst = $('#list'); $$('.row', lst).forEach((r, i) => r.style.setProperty('--i', i));
+  if (state.listEnter) { state.listEnter = false; lst.classList.add('list-enter'); setTimeout(() => lst.classList.remove('list-enter'), 1200); }
+  $$('.row', $('#list')).forEach((r) => (r.onclick = () => { select(r.dataset.id); if (innerWidth < 980) setTimeout(() => $('#detail').scrollIntoView({ behavior: 'smooth', block: 'start' }), 30); }));
+}
+$('#search').addEventListener('input', (e) => { state.filter = e.target.value; renderList(); });
+
+/* ---------- detail ---------- */
+const current = () => state.endpoints.find((e) => e.id === state.selected);
+
+function select(id) {
+  state.selected = id; state.swap = true;
+  const ep = current();
+  state.tab = ep.body ? 'body' : Object.keys(ep.sample.pathParams || {}).length ? 'path' : 'query';
+  renderList();
+  renderDetail();
+  if (state.swap) { state.swap = false; const d = $('#detail'); d.classList.remove('swap'); void d.offsetWidth; d.classList.add('swap'); }
+}
+
+function highlight(value) {
+  let txt = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+  if (txt === undefined) return '';
+  if (txt.length > 200000) return escText(txt);
+  return escText(txt).replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (m) => {
+    let c = 'n';
+    if (m[0] === '"') c = /:$/.test(m) ? 'k' : 's';
+    else if (m === 'true' || m === 'false') c = 'b';
+    else if (m === 'null') c = 'z';
+    return `<span class="t-${c}">${m}</span>`;
+  });
+}
+
+function renderDetail() {
+  const ep = current();
+  if (!ep) return;
+  const st = ensure(ep);
+  const tabs = [['path', 'Path'], ['query', 'Query'], ['headers', 'Headers'], ...(ep.body ? [['body', 'Body']] : [])];
+  const doc = ep.parameters.map((p) => p).filter((p) => p.in === state.tab || (state.tab === 'path' && p.in === 'path'));
+
+  $('#detail').innerHTML = `
+    <div class="d-head">
+      <div class="d-path"><span class="m ${ep.method}">${ep.method}</span><code>${escHtml(ep.path)}</code></div>
+      ${ep.summary || ep.description ? `<p class="d-sum">${escHtml(ep.summary || ep.description.slice(0, 220))}</p>` : ''}
+      <div class="chips">
+        ${ep.tags.map((t) => `<span class="chip">${escHtml(t)}</span>`).join('')}
+        ${ep.secured ? '<span class="chip lock">🔒 Auth required</span>' : ''}
+        ${ep.deprecated ? '<span class="chip lock">Deprecated</span>' : ''}
+        ${ep.body ? `<span class="chip">${escHtml(ep.body.contentType)}</span>` : ''}
+        ${st.tpl && st.tpl.body ? '<span class="chip ai">♻ Fresh data every run</span>' : ''}
+        <span class="chip ai" id="srcChip">${st.source === 'ai' ? '✦ ' + escHtml(st.providerLabel || 'AI') + ' payload' : 'Schema payload'}</span>
+      </div>
+    </div>
+    ${st.aiWarn ? `<div class="ai-warn" role="alert"><b>AI payload failed.</b> ${escHtml(st.aiWarn)} <button class="link" id="openSet" type="button">Open Settings</button></div>` : ''}
+    <div class="toolbar">
+      <div class="seg" id="scenario">
+        <button data-v="valid" class="${st.scenario === 'valid' ? 'on' : ''}">Valid</button>
+        <button data-v="negative" class="${st.scenario === 'negative' ? 'on' : ''}">Negative</button>
+        <button data-v="edge" class="${st.scenario === 'edge' ? 'on' : ''}">Edge</button>
+      </div>
+      <div class="spacer"></div>
+      ${provSelectHtml()}
+      <button class="btn ai" id="genBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/></svg>Generate with AI</button>
+      <button class="btn primary" id="runBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>Run</button>
+    </div>
+    <div class="editor">
+      <div class="tabrow"><div class="seg" id="tabs">${tabs.map(([k, l]) => { const n = k === 'body' ? 0 : countKeys(st[k === 'path' ? 'pathParams' : k]); return `<button data-t="${k}" class="${state.tab === k ? 'on' : ''}">${l}${n ? `<span class="n">${n}</span>` : ''}</button>`; }).join('')}</div>${tokenSelHtml()}</div>
+      <div style="height:12px"></div>
+      <textarea class="code" id="editor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="hint"><span id="hintL">${hintFor(ep)}</span><span id="hintR">⌘/Ctrl + Enter to run</span></div>
+    </div>
+    <div id="respWrap">${respHtml(ep, st)}</div>`;
+
+  const ta = $('#editor');
+  ta.value = fieldText(st, state.tab);
+  validate(ta);
+  const os = $('#openSet'); if (os) os.onclick = () => openSettings();
+  ta.addEventListener('input', () => { setField(st, state.tab, ta.value); validate(ta); });
+  ta.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runCurrent(); }
+    if (e.key === 'Tab') { e.preventDefault(); const s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); }
+  });
+  $$('#tabs button').forEach((b) => (b.onclick = () => { state.tab = b.dataset.t; renderDetail(); }));
+  $$('#scenario button').forEach((b) => (b.onclick = () => { st.scenario = b.dataset.v; $$('#scenario button').forEach((x) => x.classList.toggle('on', x === b)); }));
+  $('#genBtn').onclick = generateCurrent;
+  const tokSel = $('#tokSel');
+  if (tokSel) tokSel.onchange = () => {
+    if (!tokSel.value) return;
+    ta.focus(); ta.setRangeText(`{{${tokSel.value}}}`, ta.selectionStart, ta.selectionEnd, 'end');
+    ta.dispatchEvent(new Event('input')); tokSel.value = '';
+  };
+  $('#provQuick').onchange = (e) => {
+    settings.provider = e.target.value; dead.delete(settings.provider); saveSettings();
+    if (!hasKey()) toast(`No ${PROVIDERS[settings.provider].label} key yet — add one in Settings.`);
+    renderDetail();
+  };
+  $('#runBtn').onclick = runCurrent;
+  bindRespTabs();
+}
+
+function tokenSelHtml() {
+  return `<select class="prov-select" id="tokSel" aria-label="Insert dynamic value"><option value="">{{ }} Dynamic value</option>${TOKENS.map((t) => `<option value="${t}">{{${t}}}</option>`).join('')}</select>`;
+}
+function provSelectHtml() {
+  return `<select class="prov-select" id="provQuick" aria-label="AI provider">${Object.entries(PROVIDERS).map(([k, v]) => `<option value="${k}" ${k === settings.provider ? 'selected' : ''}>${v.label}${hasKey(k) || v.keyOptional ? '' : ' (no key)'}</option>`).join('')}</select>`;
+}
+function fieldKey(tab) { return tab === 'path' ? 'pathParams' : tab; }
+function fieldText(st, tab) { return st[fieldKey(tab)] ?? ''; }
+function setField(st, tab, v) { st[fieldKey(tab)] = v; }
+function hintFor(ep) {
+  const list = ep.parameters.filter((p) => (state.tab === 'path' ? p.in === 'path' : p.in === state.tab));
+  if (state.tab === 'body') return (ep.body?.required ? 'Body required' : 'Body optional') + (ensure(ep).tpl?.body ? ' · name, email, phone… are replaced with fresh unique values on every run' : '');
+  if (!list.length) return state.tab === 'headers' ? 'Custom headers (JSON)' : 'No parameters in spec';
+  return list.map((p) => `<code class="mono">${escHtml(p.name)}${p.required ? '*' : ''}</code>`).join(' ');
+}
+function validate(ta) {
+  const v = ta.value.trim();
+  const ep = current();
+  const nonJsonOk = state.tab === 'body' && ep.body && !/json/i.test(ep.body.contentType);
+  let ok = true;
+  if (v) { try { JSON.parse(v); } catch { ok = nonJsonOk; } }
+  ta.classList.toggle('bad', !ok);
+  $('#hintR').innerHTML = ok ? '⌘/Ctrl + Enter to run' : '<span class="err">Invalid JSON</span>';
+  return ok;
+}
+
+/* ---------- payload gen + run ---------- */
+const slim = (ep) => ({ method: ep.method, path: ep.path, summary: ep.summary, description: ep.description, parameters: ep.parameters, body: ep.body, sample: ep.sample });
+
+function applyPayload(ep, st, p, source) {
+  st.pathParams = pretty(p.pathParams || {});
+  st.query = pretty(p.query || {});
+  st.headers = pretty(p.headers || {});
+  if (ep.body) st.body = pretty(p.body);
+  st.source = source;
+  concretize(st);
+}
+
+const dead = new Set(); // providers that failed for good this session (bad key, no credits, wrong model)
+function notifyDead(prov, reason, nextLabel) {
+  toast(`${PROVIDERS[prov].label} is unavailable: ${reason}. ${nextLabel ? `Switching to ${nextLabel}.` : 'Using schema-based payloads.'}`, 'error');
+}
+
+// Tries the selected provider first, then any other provider that has a key.
+// A provider that fails for good (401 / 402 / 403 / 404) is skipped for the rest of the session.
+async function generateFor(ep, { useAI = true } = {}) {
+  const st = ensure(ep);
+  const base = { endpoint: slim(ep), scenario: st.scenario };
+  const order = useAI ? [settings.provider, ...Object.keys(PROVIDERS).filter((p) => p !== settings.provider)].filter((p) => hasKey(p) && !dead.has(p)) : [];
+  let r = null;
+  let failedProv = null;
+  for (let i = 0; i < order.length; i++) {
+    const prov = order[i];
+    r = await api('/api/generate', { ...base, provider: prov, apiKey: keyOf(prov), model: modelOf(prov), useAI: true });
+    if (r.source === 'ai') {
+      if (failedProv) { r.fellBack = true; r.note = `${PROVIDERS[failedProv].label} failed — used ${r.providerLabel} instead.`; }
+      break;
+    }
+    if (!r.aiFailed) break;
+    if ([401, 402, 403, 404].includes(r.aiStatus)) {
+      dead.add(prov);
+      const next = order.slice(i + 1).find((x) => !dead.has(x));
+      notifyDead(prov, r.aiMessage, next ? PROVIDERS[next].label : '');
+    }
+    failedProv = failedProv || prov;
+  }
+  if (!r) {
+    // AI is off, there is no key, or every provider has already failed → schema-based payload
+    r = await api('/api/generate', { ...base, provider: settings.provider, apiKey: keyOf(), model: modelOf(), useAI: useAI && !anyKey() });
+    if (useAI && anyKey()) r.note = 'Your AI providers are unavailable — using a schema-based payload.';
+  }
+  applyPayload(ep, st, r.payload, r.source);
+  applyChain(ep, st);
+  st.providerLabel = r.providerLabel;
+  return r;
+}
+
+async function generateCurrent() {
+  const ep = current(); const btn = $('#genBtn');
+  const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Thinking';
+  try {
+    const r = await generateFor(ep);
+    ensure(ep).aiWarn = r.source === 'ai' ? '' : (r.aiMessage ? `${r.providerLabel || PROVIDERS[settings.provider].label}: ${r.aiMessage}. Showing a schema-based payload instead.` : (anyKey() ? 'Your AI providers are unavailable. Showing a schema-based payload instead.' : `No AI key yet. Add a ${PROVIDERS[settings.provider].label} key in Settings to use AI.`));
+    if (r.source === 'ai') toast(r.fellBack ? r.note : `${r.providerLabel} payload ready ✦`);
+    else toast(r.note || 'Schema payload ready', r.note && /failed|did not return|No .* key|unavailable/.test(r.note) ? 'error' : '');
+  } catch (e) { toast(e.message, 'error'); }
+  if (state.selected === ep.id) renderDetail();
+}
+
+function parseField(label, txt, { allowRaw = false } = {}) {
+  const t = (txt || '').trim();
+  if (!t) return undefined;
+  try { return JSON.parse(t); } catch { if (allowRaw) return txt; throw new Error(`${label}: invalid JSON`); }
+}
+
+function buildRequest(ep) {
+  const st = ensure(ep);
+  concretize(st, { fresh: true });
+  if (state.selected === ep.id) { const ed = $('#editor'); if (ed && document.activeElement !== ed) ed.value = fieldText(st, state.tab); }
+  const authName = settings.authName || 'Authorization';
+  const auto = !settings.authValue && chain.token && !isLogin(ep) ? { [authName]: `Bearer ${chain.token}` } : {};
+  const headers = { ...(settings.authValue ? { [authName]: settings.authValue } : auto), ...(parseField('Headers', st.headers) || {}) };
+  const nonJson = ep.body && !/json/i.test(ep.body.contentType);
+  return {
+    baseUrl: state.baseUrl, method: ep.method, path: ep.path,
+    pathParams: parseField('Path', st.pathParams) || {}, query: parseField('Query', st.query) || {}, headers,
+    body: ep.body ? parseField('Body', st.body, { allowRaw: nonJson }) : undefined,
+    contentType: ep.body?.contentType, insecure: settings.insecure, emailDomain: settings.emailDomain,
+  };
+}
+
+function verdictFor(st, res) {
+  if (!res.ok) return 'fail';
+  const c = res.status;
+  return st.scenario === 'negative' ? (c >= 400 && c < 500 ? 'pass' : 'fail') : c >= 200 && c < 400 ? 'pass' : 'fail';
+}
+
+/* ---------- chaining: register → login → token → created ids ---------- */
+const chain = { ids: {}, lastUser: null, token: '', tokenFrom: '' };
+const TOKENS = ['email', 'username', 'phone', 'name', 'firstName', 'lastName', 'uuid', 'random', 'timestamp', 'date', 'datetime'];
+const AUTH_RE = /(login|log-in|signin|sign-in|authenticate|oauth|\/token)/i;
+const REG_RE = /(register|signup|sign-up|sign_up)/i;
+const isLogin = (ep) => ep.method === 'POST' && AUTH_RE.test(ep.path);
+const isRegister = (ep) => ep.method === 'POST' && REG_RE.test(ep.path);
+const normKey = (k) => String(k).replace(/[_\-\s]/g, '').toLowerCase();
+const keyIn = (o, re) => Object.keys(o || {}).find((k) => re.test(normKey(k)));
+const collKey = (p) => p.replace(/\/+$/, '').toLowerCase();
+// "/api/auth/register" creates a user, "/api/products" creates a product ... so later "/users/{id}" can use that id
+function resourceOf(p) {
+  const segs = p.split('/').filter((x) => x && !/^\{/.test(x));
+  const last = segs[segs.length - 1] || '';
+  if (REG_RE.test(last)) return '~user';
+  return '~' + last.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '');
+}
+
+function resetChain() { chain.ids = {}; chain.lastUser = null; chain.token = ''; chain.tokenFrom = ''; renderAutoAuth(); }
+function renderAutoAuth() {
+  const el = $('#autoAuth'); if (!el) return;
+  if (!chain.token) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = `<span>🔑 Token from <b>${escHtml(chain.tokenFrom)}</b> in use</span><button class="link" id="clearTok" type="button">Clear</button>`;
+  $('#clearTok').onclick = () => { chain.token = ''; chain.tokenFrom = ''; renderAutoAuth(); };
+}
+function findToken(o, depth = 0) {
+  if (!o || typeof o !== 'object' || depth > 3) return '';
+  for (const [k, v] of Object.entries(o)) if (typeof v === 'string' && v.length >= 6 && /^(access_?token|token|jwt|id_?token|auth_?token|bearer)$/i.test(k)) return v;
+  for (const v of Object.values(o)) { const t = findToken(v, depth + 1); if (t) return t; }
+  return '';
+}
+function findId(o) {
+  if (!o || typeof o !== 'object') return undefined;
+  for (const k of ['id', '_id', 'Id', 'ID', 'uuid']) if (o[k] !== undefined && o[k] !== null && typeof o[k] !== 'object') return o[k];
+  for (const k of ['data', 'result', 'user', 'item', 'content']) { const v = o[k]; if (v && typeof v === 'object') { const r = findId(v); if (r !== undefined) return r; } }
+  return undefined;
+}
+
+// Remember what a successful call produced: login token, created account, created ids.
+function afterExecute(ep, st, res) {
+  if (!res.ok || res.status < 200 || res.status >= 300) return;
+  if (isLogin(ep)) {
+    const t = findToken(res.body);
+    if (t) { chain.token = t; chain.tokenFrom = ep.path; renderAutoAuth(); }
+    return;
+  }
+  if (ep.method !== 'POST') return;
+  const sent = res.sent && res.sent.body;
+  if (sent && typeof sent === 'object' && !Array.isArray(sent)) {
+    const ek = keyIn(sent, /email/), uk = keyIn(sent, /^(username|loginname|login)$/), pk = keyIn(sent, /^pass(word)?$/);
+    if (pk && (ek || uk)) chain.lastUser = { email: ek ? sent[ek] : '', username: uk ? sent[uk] : '', password: sent[pk] };
+  }
+  if (!/\{[^}]+\}/.test(ep.path)) {
+    const id = findId(res.body);
+    if (id !== undefined) { chain.ids[collKey(ep.path)] = id; chain.ids[resourceOf(ep.path)] = id; }
+  }
+}
+
+// Use what earlier calls produced when a new payload is generated.
+function applyChain(ep, st) {
+  if (st.scenario === 'negative') return; // negative tests must stay broken on purpose
+  try {
+    const pp = JSON.parse(st.pathParams || '{}'); let changed = false;
+    for (const m of ep.path.matchAll(/\/\{([^}]+)\}/g)) {
+      const prefix = ep.path.slice(0, m.index);
+      const id = chain.ids[collKey(prefix)] ?? chain.ids[resourceOf(prefix)];
+      if (id !== undefined) { pp[m[1]] = id; changed = true; }
+    }
+    if (changed) st.pathParams = pretty(pp);
+  } catch {}
+  if (isLogin(ep) && chain.lastUser && ep.body) {
+    try {
+      const b = JSON.parse(st.body || '{}');
+      if (b && typeof b === 'object' && !Array.isArray(b)) {
+        for (const k of Object.keys(b)) {
+          const n = normKey(k);
+          if (/email/.test(n) && chain.lastUser.email) b[k] = chain.lastUser.email;
+          else if (/^(username|loginname|login|user)$/.test(n)) b[k] = chain.lastUser.username || chain.lastUser.email || b[k];
+          else if (/^pass(word)?$/.test(n) && chain.lastUser.password) b[k] = chain.lastUser.password;
+        }
+        st.body = pretty(b);
+      }
+    } catch {}
+  }
+}
+
+function sentReq(ep, st) {
+  const r = { ...(st.lastReq || buildRequest(ep)) };
+  const s = st.result && st.result.sent;
+  if (s) { r.pathParams = s.pathParams; r.query = s.query; r.body = s.body; }
+  return r;
+}
+
+async function execute(ep) {
+  const st = ensure(ep);
+  const req = buildRequest(ep);
+  st.lastReq = req;
+  const res = await api('/api/execute', req);
+  st.result = res; st.verdict = verdictFor(st, res);
+  afterExecute(ep, st, res);
+  return res;
+}
+
+async function runCurrent() {
+  const ep = current(); if (!ep) return;
+  if (!state.baseUrl) return toast('Enter a Base URL.', 'error');
+  const btn = $('#runBtn'); const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Running';
+  try { await execute(ep); } catch (e) { toast(e.message, 'error'); }
+  if (state.selected === ep.id) { $('#respWrap').innerHTML = respHtml(ep, ensure(ep)); bindRespTabs(); { const rp = $('#respWrap .resp'); if (rp) { rp.classList.add('fresh'); if (ensure(ep).verdict === 'fail') rp.classList.add('bad'); } } $('#respWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  btn.disabled = false; btn.innerHTML = old;
+  renderList();
+}
+
+/* ---------- response ---------- */
+function respHtml(ep, st) {
+  const r = st.result;
+  if (!r) return '';
+  if (!r.ok) return `<div class="resp"><div class="resp-head"><span class="status bad">Error</span><span class="stat">${escHtml(r.error)}</span></div></div>`;
+  const cls = r.status < 300 ? 'ok' : r.status < 500 ? 'warn' : 'bad';
+  const size = r.size > 1024 ? (r.size / 1024).toFixed(1) + ' KB' : r.size + ' B';
+  let content;
+  if (state.respTab === 'headers') content = highlight(r.headers);
+  else if (state.respTab === 'request') content = highlight({ method: ep.method, url: r.url, body: r.sent ? r.sent.body : undefined });
+  else if (state.respTab === 'curl') content = escText(toCurl(sentReq(ep, st)));
+  else content = r.body === '' ? '<span class="t-z">(empty response)</span>' : highlight(r.body);
+  return `<div class="resp">
+    <div class="resp-head">
+      <span class="status ${cls}">${r.status} ${escHtml(r.statusText || '')}</span>
+      <span class="verdict ${st.verdict}">${st.verdict === 'pass' ? '✓ As expected' : '✕ Not as expected'}</span>
+      <span class="stat">${r.ms} ms · ${size}${r.truncated ? ' · truncated' : ''}</span>
+      <div class="spacer"></div>
+      <div class="seg" id="respTabs">${['body', 'headers', 'request', 'curl'].map((k) => `<button data-r="${k}" class="${state.respTab === k ? 'on' : ''}">${k === 'curl' ? 'cURL' : k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
+      <button class="btn sm" id="copyBtn">Copy</button>
+    </div>
+    <pre>${content}</pre></div>`;
+}
+function bindRespTabs() {
+  $$('#respTabs button').forEach((b) => (b.onclick = () => { state.respTab = b.dataset.r; const ep = current(); $('#respWrap').innerHTML = respHtml(ep, ensure(ep)); bindRespTabs(); }));
+  const c = $('#copyBtn');
+  if (c) c.onclick = () => { navigator.clipboard.writeText($('.resp pre').innerText).then(() => toast('Copied')); };
+}
+
+function toCurl(req) {
+  let p = req.path.replace(/\{([^}]+)\}/g, (_, k) => encodeURIComponent(req.pathParams?.[k] ?? `{${k}}`));
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(req.query || {})) if (v !== '' && v != null) qs.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
+  let cmd = `curl -X ${req.method} '${req.baseUrl.replace(/\/$/, '')}${p}${qs.toString() ? '?' + qs : ''}'`;
+  const h = { ...(req.headers || {}) };
+  if (req.body !== undefined && req.body !== '' && !Object.keys(h).some((k) => k.toLowerCase() === 'content-type')) h['Content-Type'] = req.contentType || 'application/json';
+  for (const [k, v] of Object.entries(h)) cmd += ` \\\n  -H '${k}: ${String(v).replace(/'/g, "'\\''")}'`;
+  if (req.body !== undefined && req.body !== '') cmd += ` \\\n  -d '${(typeof req.body === 'string' ? req.body : JSON.stringify(req.body)).replace(/'/g, "'\\''")}'`;
+  return cmd;
+}
+
+/* ---------- run all ---------- */
+let runCtl = { stop: false, running: false, done: false, rows: [] };
+const dlgRun = $('#runDlg');
+
+function resetRunDlg() {
+  runCtl = { stop: false, running: false, done: false, rows: [] };
+  $('#runTitle').textContent = 'Run all APIs';
+  $('#runOpts').hidden = false; $('#runProgress').hidden = true;
+  $('#startRun').hidden = false; $('#startRun').textContent = 'Start'; $('#startRun').disabled = false;
+  $('#stopBtn').hidden = true; $('#exportBtn').hidden = true;
+  $('#oAI').checked = anyKey();
+  $('#aiHelp').textContent = hasKey() ? `A fresh ${PROVIDERS[settings.provider].label} payload for every endpoint` : anyKey() ? `No ${PROVIDERS[settings.provider].label} key — another provider that has a key will be used.` : `No AI key yet — add one in Settings. Until then, schema-based payloads are used.`;
+}
+$('#runAllBtn').onclick = () => { resetRunDlg(); dlgRun.showModal(); };
+$$('#oScenario button').forEach((b) => (b.onclick = () => { $$('#oScenario button').forEach((x) => x.classList.toggle('on', x === b)); }));
+
+$('#startRun').onclick = async () => {
+  if (runCtl.done) return resetRunDlg();
+  if (!state.baseUrl) return toast('Enter a Base URL.', 'error');
+  const useAI = $('#oAI').checked && anyKey();
+  const skipDel = $('#oSkipDel').checked, skipMod = $('#oSkipMod').checked;
+  const scenario = $('#oScenario .on').dataset.v;
+  const runRank = (e) => (isRegister(e) ? 0 : isLogin(e) ? 1 : e.method === 'POST' ? 2 : ['GET', 'HEAD', 'OPTIONS'].includes(e.method) ? 3 : e.method === 'PUT' || e.method === 'PATCH' ? 4 : 5);
+  const list = state.endpoints
+    .filter((e) => !(skipDel && e.method === 'DELETE') && !(skipMod && (e.method === 'PUT' || e.method === 'PATCH')))
+    .sort((a, b) => runRank(a) - runRank(b)); // register → login → create → read → update → delete
+  if (!list.length) return toast('No endpoints left to run.', 'error');
+  resetChain();
+
+  runCtl = { stop: false, running: true, done: false, rows: [] };
+  $('#runOpts').hidden = true; $('#runProgress').hidden = false; $('#runRows').innerHTML = '';
+  $('#startRun').hidden = true; $('#stopBtn').hidden = false; $('#exportBtn').hidden = true;
+  $('#runTitle').textContent = 'Running…';
+  let pass = 0, fail = 0, totalMs = 0;
+  const upd = (i) => {
+    $('#sTotal').textContent = list.length; $('#sPass').textContent = pass; $('#sFail').textContent = fail;
+    $('#sAvg').textContent = i ? Math.round(totalMs / i) : 0; $('#bar').style.width = (i / list.length) * 100 + '%';
+  };
+  upd(0);
+
+  for (let i = 0; i < list.length; i++) {
+    if (runCtl.stop) break;
+    const ep = list[i]; const st = ensure(ep); st.scenario = scenario;
+    const tr = document.createElement('tr'); tr.className = 'clickable'; tr.dataset.id = ep.id;
+    tr.innerHTML = `<td><span class="m ${ep.method}">${ep.method}</span></td><td class="path" title="${escHtml(ep.path)}">${escHtml(ep.path)}</td><td>…</td><td>…</td><td>…</td>`;
+    $('#runRows').appendChild(tr); tr.scrollIntoView({ block: 'nearest' });
+    let res, note = '';
+    try {
+      const g = await generateFor(ep, { useAI });
+      if (useAI && g.source !== 'ai') note = 'schema';
+      res = await execute(ep);
+    } catch (e) { res = { ok: false, error: e.message }; st.result = res; st.verdict = 'fail'; }
+    const v = st.verdict; v === 'pass' ? pass++ : fail++; totalMs += res.ms || 0;
+    const sc = res.ok ? (res.status < 300 ? 'ok' : res.status < 500 ? 'warn' : 'bad') : 'bad';
+    tr.innerHTML = `<td><span class="m ${ep.method}">${ep.method}</span></td><td class="path" title="${escHtml(ep.path)}">${escHtml(ep.path)}</td>
+      <td><span class="status ${sc}">${res.ok ? res.status : 'ERR'}</span></td><td>${res.ms ?? '–'} ms</td>
+      <td><span class="verdict ${v}">${v === 'pass' ? '✓ Pass' : '✕ Fail'}</span></td>`;
+    tr.title = res.ok ? '' : res.error;
+    tr.onclick = () => { dlgRun.close(); select(ep.id); setTimeout(() => $('#respWrap')?.scrollIntoView({ behavior: 'smooth' }), 60); };
+    runCtl.rows.push({ method: ep.method, path: ep.path, scenario, status: res.ok ? res.status : null, ms: res.ms ?? null, result: v, error: res.ok ? undefined : res.error, aiPayload: st.source === 'ai', request: st.lastReq });
+    upd(i + 1); renderList();
+    if (useAI) await sleep(250); // be gentle with HF rate limits
+  }
+  runCtl.running = false; runCtl.done = true;
+  $('#runTitle').textContent = runCtl.stop ? 'Stopped' : 'Done';
+  $('#stopBtn').hidden = true; $('#exportBtn').hidden = false; $('#startRun').hidden = false; $('#startRun').textContent = 'Run again';
+  if (!runCtl.stop) toast(`${pass} passed · ${fail} failed`);
+};
+$('#stopBtn').onclick = () => { runCtl.stop = true; };
+$('#exportBtn').onclick = () => {
+  const report = { api: state.spec.title, specUrl: state.spec.specUrl, baseUrl: state.baseUrl, generatedAt: new Date().toISOString(), summary: { total: runCtl.rows.length, passed: runCtl.rows.filter((r) => r.result === 'pass').length, failed: runCtl.rows.filter((r) => r.result === 'fail').length }, results: runCtl.rows };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }));
+  a.download = `api-test-report-${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href);
+};
+
+/* ---------- settings dialog ---------- */
+const dlgSet = $('#settingsDlg');
+let dlgProv = 'huggingface';
+let tmp = { keys: {}, models: {} };
+function stash() { tmp.keys[dlgProv] = $('#sKey').value.trim(); tmp.models[dlgProv] = $('#sModel').value.trim(); }
+function fillDlg() {
+  const P = PROVIDERS[dlgProv];
+  $$('#provSeg button').forEach((b) => b.classList.toggle('on', b.dataset.p === dlgProv));
+  $('#keyLabel').textContent = `${P.label} ${dlgProv === 'huggingface' ? 'token' : 'API key'}`;
+  $('#sKey').placeholder = P.ph;
+  $('#sKey').value = tmp.keys[dlgProv] || '';
+  $('#sModel').value = tmp.models[dlgProv] || P.model;
+  $('#models').innerHTML = P.models.map((m) => `<option value="${escHtml(m)}"></option>`).join('');
+  $('#keyHelp').innerHTML = P.help + (envKeys[dlgProv] ? ' <b>A key is also set as a server environment variable.</b>' : '') + ' Your key is stored only in this browser. You only need to add it in one place — here, or as a server environment variable.';
+  const tr = $('#testRes'); tr.textContent = ''; tr.className = 'test-res';
+}
+function openSettings(prov) {
+  tmp = { keys: { ...settings.keys }, models: { ...settings.models } };
+  dlgProv = PROVIDERS[prov] ? prov : settings.provider;
+  $('#sAuthName').value = settings.authName; $('#sAuthVal').value = settings.authValue; $('#sInsecure').checked = settings.insecure; $('#sDomain').value = settings.emailDomain;
+  fillDlg();
+  dlgSet.showModal();
+}
+$('#settingsBtn').onclick = () => openSettings();
+$$('[data-open-settings]').forEach((b) => (b.onclick = () => openSettings(b.dataset.provider)));
+$$('#provSeg button').forEach((b) => (b.onclick = () => { stash(); dlgProv = b.dataset.p; fillDlg(); }));
+$('#testKey').onclick = async () => {
+  stash();
+  const btn = $('#testKey'), out = $('#testRes'), P = PROVIDERS[dlgProv];
+  const old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Testing'; out.textContent = ''; out.className = 'test-res';
+  try {
+    const r = await api('/api/ai/test', { provider: dlgProv, apiKey: tmp.keys[dlgProv] || '', model: tmp.models[dlgProv] || P.model });
+    out.textContent = (r.ok ? '✓ ' : '✕ ') + r.message; out.className = 'test-res ' + (r.ok ? 'ok' : 'bad');
+  } catch (e) { out.textContent = '✕ ' + e.message; out.className = 'test-res bad'; }
+  btn.disabled = false; btn.innerHTML = old;
+};
+$('#saveSettings').onclick = () => {
+  stash();
+  settings.keys = Object.fromEntries(Object.entries(tmp.keys).filter(([, v]) => v));
+  settings.models = Object.fromEntries(Object.entries(tmp.models).filter(([k, v]) => v && v !== PROVIDERS[k].model));
+  settings.provider = dlgProv;
+  settings.authName = $('#sAuthName').value.trim() || 'Authorization'; settings.authValue = $('#sAuthVal').value.trim(); settings.insecure = $('#sInsecure').checked; settings.emailDomain = $('#sDomain').value.trim().replace(/^@/, '') || 'example.com';
+  saveSettings(); dead.clear(); closeDialog(dlgSet);
+  toast(hasKey() ? `${PROVIDERS[settings.provider].label} ready ✦` : 'Settings saved');
+  if (state.selected) renderDetail();
+};
+// Drawers slide out before closing; plain dialogs close at once.
+function closeDialog(d) {
+  if (!d.open) return;
+  if (!d.classList.contains('drawer') || matchMedia('(prefers-reduced-motion: reduce)').matches) return d.close();
+  if (d.classList.contains('closing')) return;
+  d.classList.add('closing');
+  const done = (e) => {
+    if (e.target !== d) return;
+    d.removeEventListener('animationend', done);
+    d.classList.remove('closing');
+    d.close();
+  };
+  d.addEventListener('animationend', done);
+}
+$$('dialog').forEach((d) => {
+  d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('[data-close]')) { if (d.id === 'runDlg' && runCtl.running) return; closeDialog(d); } });
+  d.addEventListener('cancel', (e) => { if (d.classList.contains('drawer')) { e.preventDefault(); closeDialog(d); } }); // Esc key
+});
+
+/* ---------- landing page: Apple-style scroll effects ---------- */
+(function landing() {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
+  $$('.rv').forEach((el) => io.observe(el));
+
+  const so = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('active', e.isIntersecting)), { rootMargin: '-38% 0px -38% 0px' });
+  $$('.step').forEach((el) => so.observe(el));
+
+  const co = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    co.unobserve(e.target);
+    const el = e.target, to = +el.dataset.count;
+    if (reduce) { el.textContent = to; return; }
+    const t0 = performance.now();
+    const tick = (t) => { const p = Math.min(1, (t - t0) / 1100); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }), { threshold: 0.6 });
+  $$('.count').forEach((el) => co.observe(el));
+
+  const st = $('#statement');
+  st.innerHTML = st.textContent.trim().split(/\s+/).map((w) => `<span>${escHtml(w)}</span>`).join(' ');
+  const spans = $$('span', st);
+  const mock = $('#mock');
+
+  let ticking = false;
+  function update() {
+    ticking = false;
+    if (document.body.classList.contains('in-app')) return;
+    const vh = innerHeight, y = scrollY;
+    $('.nav').classList.toggle('scrolled', y > 8);
+    const sb = $('#scrollBar'); if (sb) sb.style.transform = `scaleX(${Math.min(1, y / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4)})`;
+    const hp = Math.min(1, y / (vh * 0.7)); const hh = $('.hero'); if (hh && !reduce) { hh.style.opacity = (1 - hp * 0.9).toFixed(3); hh.style.translate = `0 ${(-hp * 40).toFixed(1)}px`; }
+    if (reduce) return;
+    const p = Math.min(1, y / (vh * 0.55));
+    if (innerWidth > 760) mock.style.transform = `rotateX(${(14 * (1 - p)).toFixed(2)}deg) scale(${(0.88 + 0.12 * p).toFixed(3)})`;
+    const r = st.getBoundingClientRect();
+    const prog = Math.min(1, Math.max(0, (vh * 0.82 - r.top) / (r.height + vh * 0.2)));
+    const n = Math.round(prog * spans.length);
+    spans.forEach((sp, i) => sp.classList.toggle('lit', i < n));
+  }
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', update);
+  update();
+
+  $$('.tile').forEach((t) => t.addEventListener('pointermove', (e) => { const r = t.getBoundingClientRect(); t.style.setProperty('--mx', (e.clientX - r.left) + 'px'); t.style.setProperty('--my', (e.clientY - r.top) + 'px'); }));
+
+  $('#navCta').onclick = () => {
+    const i = $('#urlInput');
+    i.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => i.focus({ preventScroll: true }), 450);
+  };
+})();
+
+$('#urlInput').focus({ preventScroll: true });
+</script>
+</body>
+</html>

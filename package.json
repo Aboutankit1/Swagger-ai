@@ -1,0 +1,20 @@
+{
+  "name": "swagger-ai-tester",
+  "version": "1.1.0",
+  "description": "Paste a Swagger / OpenAPI link (local or live), let AI (OpenAI, Claude or Hugging Face) write the payloads, and run every API from one clean UI.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "js-yaml": "^4.1.0",
+    "undici": "^6.21.0"
+  }
+}
